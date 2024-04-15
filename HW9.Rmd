@@ -1,0 +1,115 @@
+---
+title: "HW9"
+author: "Angela Zhao"
+output: pdf_document
+---
+
+```{r global_options, echo=FALSE}
+knitr::opts_chunk$set(warning=FALSE, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+```
+
+```{r echo=FALSE,message=FALSE}
+#load libraries
+library(tidyverse)
+library(mosaic)
+library(MatchIt)
+library(moderndive)
+library(kableExtra)
+#datasets
+turnout <- read_csv('turnout.csv')
+solder <- read_csv('solder.csv')
+```
+
+az9934  
+https://github.com/angela2zhao/HW9
+
+
+# **Problem 1**
+
+# Part A
+```{r echo = FALSE}
+# proportion of those receiving and not receiving calls that voted in 1998
+prop(voted1998~GOTV_call, data=turnout)
+
+#95% confidence interval for the difference in these two proportions
+boot_called = do(10000) * diffprop(voted1998~GOTV_call, data=mosaic::resample(turnout))
+confint(boot_called, level=0.95)
+```
+
+# Part B
+```{r echo = FALSE}
+# proportion of people who voted in 1996 and whether they received a call
+xtabs(~ voted1996 + GOTV_call, data=turnout) %>%
+  prop.table(margin=2)
+
+# average age for those receiving and not receiving calls
+mean(AGE~GOTV_call,data=turnout)
+
+# proportion of people who are registered as a member of a major party and whether they received a call 
+#majorpty
+xtabs(~ MAJORPTY + GOTV_call, data=turnout) %>%
+  prop.table(margin=2)
+```
+
+# Part C
+```{r echo = FALSE}
+#matched data set
+turnout_matched = matchit(GOTV_call ~ voted1996 + AGE + MAJORPTY, data=turnout, ratio=5) %>%
+  match.data
+
+#verify matched data set
+xtabs(~ voted1996 + GOTV_call, data=turnout_matched) %>%
+  prop.table(margin=2)
+mean(AGE~GOTV_call,data=turnout_matched)
+xtabs(~ MAJORPTY + GOTV_call, data=turnout_matched) %>%
+  prop.table(margin=2)
+```
+
+\newpage
+```{r echo = FALSE}
+#recalculate part a with matched data
+prop(voted1998~GOTV_call, data=turnout_matched)
+boot_called = do(10000) * diffprop(voted1998~GOTV_call, data=mosaic::resample(turnout_matched))
+confint(boot_called, level=0.95)
+```
+
+The overall effect of the GOTV call on the likelihood of voting in the 1998 election is present because the confidence interval is statistically significant, but it is fairly small. 
+
+
+# **Problem 2**
+
+# Part A
+```{r echo = FALSE}
+ggplot(solder) + geom_boxplot(aes(x=Opening,y=skips)) + labs(title="Relationship Between Opening Size and Skips",x="Opening Size")
+```
+The plot above shows how as the size of the opening on the solder gun gets smaller, the number of skips increases overall. 
+
+```{r echo = FALSE}
+ggplot(solder) + geom_boxplot(aes(x=Solder,y=skips)) + labs(title="Relationship Between Solder Thickness and Skips",x="Solder Thickness")
+```
+The plot above shows how using a thin alloy will result in more skips overall than using a thick alloy
+
+# Part B
+```{r echo=FALSE}
+#regression model
+solder_model = lm(skips ~ Opening + Solder + Opening:Solder, data=solder)
+
+# regression table
+solder_table = get_regression_table(solder_model,conf.level = 0.95, digits=2) %>%
+  select(term, estimate, lower_ci,upper_ci)
+
+#table
+kable(solder_table,col.names = c("coefs","estimates","lower ci","upper ci"))
+```
+
+\newpage
+
+# Part C
+When the opening of the solder gun was medium sized, the number of solder skips on the circuit board was 2.41 skips higher.  
+When the opening of the solder gun was small sized, the number of solder skips on the circuit board was 5.13 skips higher.  
+When the opening of the solder gun was medium sized, the number of solder skips on the circuit board was 2.28 skips higher.  
+When the opening of the solder gun was medium sized and the thickness of the alloy used for soldering was thin, the number of solder skips on the circuit board was 0.74 skips lower.    
+When the opening of the solder gun was small sized and the thickness of the alloy used for soldering was thick, the number of solder skips on the circuit board was 9.65 skips higher.  
+
+# Part D
+I would recommend an small opening size and thin alloy for the soldering to AT&T based on this analysis. The coefficient for this interaction was negative, which means that it can decrease the number of skips. 
