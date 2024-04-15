@@ -112,4 +112,4 @@ When the opening of the solder gun was medium sized and the thickness of the all
 When the opening of the solder gun was small sized and the thickness of the alloy used for soldering was thick, the number of solder skips on the circuit board was 9.65 skips higher.  
 
 # Part D
-I would recommend an small opening size and thin alloy for the soldering to AT&T based on this analysis. The coefficient for this interaction was negative, which means that it can decrease the number of skips. 
+I would recommend a medium opening size and thin alloy for the soldering to AT&T based on this analysis. The coefficient for this interaction was negative, which means that it can decrease the number of skips. 
